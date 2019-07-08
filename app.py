@@ -44,12 +44,12 @@ def articles():
 #close connection
     cur.close()
 
-@app.route('/article/<string:id>/')
+@app.route('/articles/<string:id>/')
 def article(id):
 
     cur = mysql.connection.cursor()
 
-    result = cur.execute('select * from articles where id = %s ', id)
+    result = cur.execute('SELECT * FROM articles WHERE id = %s ', id)
 
     article = cur.fetchone()
 
@@ -201,11 +201,40 @@ def edit_article(id):
         body = form.body.data
 
     #create a cursor 
-    cur = mysql.connection.cursor()
+        cur = mysql.connection.cursor()
 
 #execute
-    cur.excute("UPDATE articles SET title=%s, body=%s where id = %s", (title, body))
+        cur.execute("UPDATE articles SET title=%s, body=%s where id = %s", (title, body, id))
 
+#commit to db
+        mysql.connection.commit()
+
+#close connection
+        cur.close()
+        flash('Article Updated', 'success')
+        return redirect(url_for('dashboard'))
+    return render_template('edit_article.html', form = form)
+
+#Delete article
+@app.route('/delete_article/<string:id>', methods=['POST'])
+@is_logged_in
+def delete_article(id):
+    #create cursor
+    cur = mysql.connection.cursor()
+
+    #Execute
+    cur.execute("DELETE FROM articles WHERE id =%s", [id])
+
+    #Commit to DB
+    mysql.connection.commit()
+
+    #close connection
+
+    cur.close()
+    flash('Article Deleted', 'success')
+    return redirect(url_for('dashboard'))
+
+    
 if __name__ =='__main__': 
     app.secret_key='secret123'
     app.run()
